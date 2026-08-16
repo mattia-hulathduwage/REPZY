@@ -4,18 +4,12 @@ import { ProgressBar } from "@/components/progress-bar";
 export function CalorieSummaryCard({
   calories,
   goal,
-  protein,
-  proteinGoal,
 }: {
   calories: number;
   goal: number;
-  protein: number;
-  proteinGoal: number;
 }) {
   const pct = Math.min(100, (calories / goal) * 100);
   const remaining = Math.max(0, goal - calories);
-  const proteinPct = Math.min(100, (protein / proteinGoal) * 100);
-  const proteinRemaining = Math.max(0, proteinGoal - protein);
 
   return (
     <View style={styles.card}>
@@ -33,19 +27,6 @@ export function CalorieSummaryCard({
       </View>
 
       <Text style={styles.remaining}>{remaining} kcal remaining</Text>
-
-      <View style={styles.proteinRow}>
-        <Text style={styles.proteinLabel}>Protein</Text>
-        <Text style={styles.proteinValue}>
-          {protein}g / {proteinGoal}g
-        </Text>
-      </View>
-
-      <View style={styles.proteinProgressSpacing}>
-        <ProgressBar pct={proteinPct} />
-      </View>
-
-      <Text style={styles.remaining}>{proteinRemaining}g remaining</Text>
     </View>
   );
 }
@@ -72,13 +53,4 @@ const styles = StyleSheet.create({
   calorieValue: { fontSize: 14, fontWeight: "600", color: "#111827" },
   progressSpacing: { marginTop: 8 },
   remaining: { marginTop: 16, fontSize: 12, color: "#9ca3af" },
-  proteinRow: {
-    marginTop: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  proteinLabel: { fontSize: 14, fontWeight: "500", color: "#6b7280" },
-  proteinValue: { fontSize: 14, fontWeight: "600", color: "#111827" },
-  proteinProgressSpacing: { marginTop: 8 },
 });

@@ -6,19 +6,19 @@ import Svg, { Path } from "react-native-svg";
 import Body, { type Slug } from "react-native-body-highlighter";
 import { EXERCISES_BY_MUSCLE, type MuscleKey } from "@/lib/muscle-exercises";
 
-const MUSCLE_GROUPS: { key: MuscleKey; label: string; slug: Slug }[] = [
-  { key: "chest", label: "Chest", slug: "chest" },
-  { key: "bicep", label: "Bicep", slug: "biceps" },
-  { key: "tricep", label: "Tricep", slug: "triceps" },
-  { key: "legs", label: "Quads", slug: "quadriceps" },
-  { key: "shoulders", label: "Shoulders", slug: "deltoids" },
-  { key: "abs", label: "Abs", slug: "abs" },
-  { key: "calfs", label: "Calfs", slug: "calves" },
-  { key: "forearms", label: "Forearms", slug: "forearm" },
-  { key: "hamstring", label: "Hamstring", slug: "hamstring" },
-  { key: "trapezius", label: "Trap", slug: "trapezius" },
-  { key: "upperBack", label: "Upper back", slug: "upper-back" },
-  { key: "lowerBack", label: "Lower back", slug: "lower-back" },
+const MUSCLE_GROUPS: { key: MuscleKey; label: string; slug: Slug; color: string }[] = [
+  { key: "chest", label: "Chest", slug: "chest", color: "#2a78d6" },
+  { key: "bicep", label: "Bicep", slug: "biceps", color: "#eb6834" },
+  { key: "tricep", label: "Tricep", slug: "triceps", color: "#1baf7a" },
+  { key: "legs", label: "Quads", slug: "quadriceps", color: "#eda100" },
+  { key: "shoulders", label: "Shoulders", slug: "deltoids", color: "#e87ba4" },
+  { key: "abs", label: "Abs", slug: "abs", color: "#008300" },
+  { key: "calfs", label: "Calfs", slug: "calves", color: "#4a3aa7" },
+  { key: "forearms", label: "Forearms", slug: "forearm", color: "#e34948" },
+  { key: "hamstring", label: "Hamstring", slug: "hamstring", color: "#0bb4c4" },
+  { key: "trapezius", label: "Trap", slug: "trapezius", color: "#a15c1f" },
+  { key: "upperBack", label: "Upper back", slug: "upper-back", color: "#5b6ee1" },
+  { key: "lowerBack", label: "Lower back", slug: "lower-back", color: "#d6336c" },
 ];
 
 const BACK_ONLY_KEYS: MuscleKey[] = ["tricep", "hamstring", "trapezius", "upperBack", "lowerBack"];
@@ -27,7 +27,9 @@ const SLUG_TO_KEY: Record<string, MuscleKey> = Object.fromEntries(
   MUSCLE_GROUPS.map((m) => [m.slug, m.key])
 );
 
-const HIGHLIGHT = "#df6847";
+const MUSCLE_COLORS: Record<MuscleKey, string> = Object.fromEntries(
+  MUSCLE_GROUPS.map((m) => [m.key, m.color])
+) as Record<MuscleKey, string>;
 
 export default function MuscleAnatomyScreen() {
   const router = useRouter();
@@ -36,6 +38,7 @@ export default function MuscleAnatomyScreen() {
   const selectedSlug = selected ? MUSCLE_GROUPS.find((m) => m.key === selected)?.slug : undefined;
   const side: "front" | "back" = selected && BACK_ONLY_KEYS.includes(selected) ? "back" : "front";
   const exerciseGroups = selected ? EXERCISES_BY_MUSCLE[selected] : [];
+  const selectedColor = selected ? MUSCLE_COLORS[selected] : "#df6847";
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
@@ -61,7 +64,7 @@ export default function MuscleAnatomyScreen() {
               <Pressable
                 key={m.key}
                 onPress={() => setSelected(m.key)}
-                style={[styles.tag, selected === m.key && styles.tagActive]}
+                style={[styles.tag, selected === m.key && { backgroundColor: m.color }]}
               >
                 <Text style={[styles.tagText, selected === m.key && styles.tagTextActive]}>
                   {m.label}
@@ -72,12 +75,12 @@ export default function MuscleAnatomyScreen() {
 
           <View style={styles.bodyCard}>
             <Body
-              data={selectedSlug ? [{ slug: selectedSlug, color: HIGHLIGHT }] : []}
+              data={selectedSlug ? [{ slug: selectedSlug, color: selectedColor }] : []}
               onBodyPartPress={(part) => {
                 const key = part.slug ? SLUG_TO_KEY[part.slug] : undefined;
                 if (key) setSelected(key);
               }}
-              colors={[HIGHLIGHT]}
+              colors={[selectedColor]}
               side={side}
               gender="male"
               scale={0.8}
@@ -149,7 +152,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#fff",
   },
-  tagActive: { backgroundColor: "#df6847" },
   tagText: { fontSize: 13, fontWeight: "600", color: "#374151" },
   tagTextActive: { color: "#fff" },
   bodyCard: {

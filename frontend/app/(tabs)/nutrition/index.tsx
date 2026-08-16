@@ -100,8 +100,6 @@ export default function NutritionScreen() {
         <CalorieSummaryCard
           calories={Math.round(totalCaloriesToday)}
           goal={DAILY_CALORIE_GOAL}
-          protein={Math.round(totalProteinToday)}
-          proteinGoal={dailyProteinGoal}
         />
 
         <MacrosCard

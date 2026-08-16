@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import httpx
@@ -7,6 +8,10 @@ from app.config import settings
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 )
+
+_MAX_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = 1.0
+_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 _RESPONSE_SCHEMA = {
     "type": "ARRAY",
@@ -57,18 +62,36 @@ async def estimate_nutrition(
     }
 
     url = GEMINI_URL.format(model=settings.gemini_model)
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                url, params={"key": settings.gemini_api_key}, json=payload
-            )
-    except httpx.HTTPError as exc:
-        raise NutritionEstimationError(f"Failed to reach Gemini API: {exc}") from exc
+    response: httpx.Response | None = None
+    last_error: Exception | None = None
 
-    if response.status_code != 200:
-        raise NutritionEstimationError(
-            f"Gemini API returned {response.status_code}: {response.text}"
-        )
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                response = await client.post(
+                    url, params={"key": settings.gemini_api_key}, json=payload
+                )
+            except httpx.HTTPError as exc:
+                last_error = exc
+                response = None
+            else:
+                if response.status_code == 200:
+                    break
+                if response.status_code not in _RETRYABLE_STATUS_CODES:
+                    raise NutritionEstimationError(
+                        f"Gemini API returned {response.status_code}: {response.text}"
+                    )
+                last_error = NutritionEstimationError(
+                    f"Gemini API returned {response.status_code}: {response.text}"
+                )
+
+            if attempt < _MAX_ATTEMPTS:
+                await asyncio.sleep(_RETRY_BACKOFF_SECONDS * attempt)
+
+    if response is None or response.status_code != 200:
+        if isinstance(last_error, NutritionEstimationError):
+            raise last_error
+        raise NutritionEstimationError(f"Failed to reach Gemini API: {last_error}")
 
     try:
         data = response.json()

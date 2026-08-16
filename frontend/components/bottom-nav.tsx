@@ -1,7 +1,7 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 const ITEM_SIZE = 44;
 
@@ -76,6 +76,31 @@ const ICONS: Record<string, (active: boolean) => React.ReactNode> = {
   ),
 };
 
+function QrChip({ active }: { active: boolean }) {
+  return (
+    <Svg viewBox="0 0 24 24" fill="none" width={20} height={20}>
+      <Path
+        d="M4 8V5.5C4 4.67 4.67 4 5.5 4H8M16 4h2.5c.83 0 1.5.67 1.5 1.5V8M20 16v2.5c0 .83-.67 1.5-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"
+        stroke={active ? "#df6847" : "#fff"}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Rect
+        x="9"
+        y="9"
+        width="6"
+        height="6"
+        rx="1"
+        stroke={active ? "#df6847" : "#fff"}
+        strokeWidth="1.8"
+      />
+    </Svg>
+  );
+}
+
+const QR_POSITION_KEY = "qr-dummy";
+
 export function BottomNav({ state, descriptors, navigation }: BottomTabBarProps) {
   const [positions, setPositions] = useState<Record<string, number>>({});
   const indicatorX = useRef(new Animated.Value(0)).current;
@@ -84,8 +109,9 @@ export function BottomNav({ state, descriptors, navigation }: BottomTabBarProps)
 
   const activeRoute = state.routes[state.index];
   const activeKey = activeRoute?.key;
-  const isActiveTabVisible = Boolean(activeRoute && ICONS[activeRoute.name]);
-  const activeX = activeKey ? positions[activeKey] : undefined;
+  const isQrActive = activeRoute?.name === "scan-meal";
+  const isActiveTabVisible = isQrActive || Boolean(activeRoute && ICONS[activeRoute.name]);
+  const activeX = isQrActive ? positions[QR_POSITION_KEY] : activeKey ? positions[activeKey] : undefined;
 
   useEffect(() => {
     if (isActiveTabVisible && activeX != null) {
@@ -127,37 +153,72 @@ export function BottomNav({ state, descriptors, navigation }: BottomTabBarProps)
             },
           ]}
         />
-        {state.routes.map((route: (typeof state.routes)[number], index: number) => {
-          const icon = ICONS[route.name];
-          if (!icon) return null;
+        {(() => {
+          const navItems = state.routes.map((route: (typeof state.routes)[number], index: number) => {
+            const icon = ICONS[route.name];
+            if (!icon) return null;
 
-          const active = state.index === index;
-          const label = descriptors[route.key].options.title ?? route.name;
+            const active = state.index === index;
+            const label = descriptors[route.key].options.title ?? route.name;
 
-          return (
+            return (
+              <Pressable
+                key={route.key}
+                accessibilityLabel={label}
+                onLayout={(e) => {
+                  const x = e.nativeEvent.layout.x;
+                  setPositions((prev) => (prev[route.key] === x ? prev : { ...prev, [route.key]: x }));
+                }}
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: "tabPress",
+                    target: route.key,
+                    canPreventDefault: true,
+                  });
+                  if (!active && !event.defaultPrevented) {
+                    navigation.navigate(route.name);
+                  }
+                }}
+                style={styles.item}
+              >
+                {icon(active)}
+              </Pressable>
+            );
+          });
+
+          const qrRoute = state.routes.find((route) => route.name === "scan-meal");
+
+          const midIndex = Math.floor(navItems.length / 2);
+          navItems.splice(
+            midIndex,
+            0,
             <Pressable
-              key={route.key}
-              accessibilityLabel={label}
+              key={QR_POSITION_KEY}
+              accessibilityLabel="Scan meal"
+              style={styles.item}
               onLayout={(e) => {
                 const x = e.nativeEvent.layout.x;
-                setPositions((prev) => (prev[route.key] === x ? prev : { ...prev, [route.key]: x }));
+                setPositions((prev) =>
+                  prev[QR_POSITION_KEY] === x ? prev : { ...prev, [QR_POSITION_KEY]: x }
+                );
               }}
               onPress={() => {
+                if (!qrRoute) return;
                 const event = navigation.emit({
                   type: "tabPress",
-                  target: route.key,
+                  target: qrRoute.key,
                   canPreventDefault: true,
                 });
-                if (!active && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
+                if (!isQrActive && !event.defaultPrevented) {
+                  navigation.navigate(qrRoute.name);
                 }
               }}
-              style={styles.item}
             >
-              {icon(active)}
+              <QrChip active={isQrActive} />
             </Pressable>
           );
-        })}
+          return navItems;
+        })()}
       </View>
     </View>
   );

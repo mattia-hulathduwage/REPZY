@@ -17,13 +17,15 @@ export default function WorkoutScreen() {
   const { user, token } = useAuth();
   const router = useRouter();
   const [schedules, setSchedules] = useState<WorkoutScheduleSummary[]>([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       if (!token) return;
       listSchedules(token)
         .then(setSchedules)
-        .catch(() => setSchedules([]));
+        .catch(() => setSchedules([]))
+        .finally(() => setSchedulesLoading(false));
     }, [token])
   );
 
@@ -51,11 +53,15 @@ export default function WorkoutScreen() {
 
           <TodaysWorkoutCard workoutName="Push day" exerciseCount={TODAYS_EXERCISES.length} />
 
-          {activeSchedule && (
-            <ActiveScheduleCard
-              scheduleName={activeSchedule.name}
-              workoutDays={activeSchedule.num_days}
-            />
+          {(schedulesLoading || activeSchedule) && (
+            <View style={styles.activeScheduleSlot}>
+              {activeSchedule && (
+                <ActiveScheduleCard
+                  scheduleName={activeSchedule.name}
+                  workoutDays={activeSchedule.num_days}
+                />
+              )}
+            </View>
           )}
 
           <ScheduleLibraryCard
@@ -76,6 +82,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#e9e9e9" },
   scrollContent: { alignItems: "center", paddingHorizontal: 20, paddingVertical: 24 },
   container: { width: "100%", maxWidth: 384, gap: 24, paddingBottom: 128 },
+  activeScheduleSlot: { width: "100%", height: 108 },
   title: { fontSize: 20, fontWeight: "600", color: "#111827" },
   headerRow: {
     flexDirection: "row",

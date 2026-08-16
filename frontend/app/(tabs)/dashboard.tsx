@@ -1,18 +1,23 @@
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Circle, Path } from "react-native-svg";
-import { MealCard } from "@/components/meal-card";
+import Svg, { Path } from "react-native-svg";
+import { CaloriesMacrosCard } from "@/components/calories-macros-card";
 import { ProteinChart } from "@/components/protein-chart";
 import { WeightChart } from "@/components/weight-chart";
+import { getWeightEntries, listMeals, type Meal } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
-const CALORIES_EATEN = 456;
-const CALORIE_GOAL = 512;
-const STEP_COUNT = 5234;
-const WATER_GLASSES = 12;
+const DAILY_CALORIE_GOAL = 2000;
+const PROTEIN_PER_KG = 1.5;
+const DEFAULT_PROTEIN_GOAL = 120;
+const FAT_CALORIE_SHARE = 0.27;
+const CARB_CALORIE_SHARE = 0.5;
+const CALORIES_PER_GRAM_FAT = 9;
+const CALORIES_PER_GRAM_CARB = 4;
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -21,14 +26,70 @@ function getGreeting() {
   return "Good evening";
 }
 
+function isToday(isoDate: string) {
+  const d = new Date(isoDate);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
 export default function DashboardScreen() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [bodyWeight, setBodyWeight] = useState<number | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) return;
+      listMeals(token)
+        .then(setMeals)
+        .catch(() => setMeals([]));
+      getWeightEntries(token)
+        .then((entries) => {
+          if (entries.length === 0) return;
+          setBodyWeight(entries[entries.length - 1].weight);
+        })
+        .catch(() => {});
+    }, [token])
+  );
 
   if (!user) return null;
 
   const weekStart = startOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  const dailyProteinGoal = bodyWeight
+    ? Math.round(bodyWeight * PROTEIN_PER_KG)
+    : DEFAULT_PROTEIN_GOAL;
+
+  const todaysMeals = meals.filter((m) => isToday(m.logged_at));
+  const totalCaloriesToday = todaysMeals.reduce(
+    (sum, m) => sum + m.items.reduce((s, i) => s + i.calories, 0),
+    0
+  );
+  const totalProteinToday = todaysMeals.reduce(
+    (sum, m) => sum + m.items.reduce((s, i) => s + i.protein_g, 0),
+    0
+  );
+  const totalCarbsToday = todaysMeals.reduce(
+    (sum, m) => sum + m.items.reduce((s, i) => s + i.carbs_g, 0),
+    0
+  );
+  const totalFatToday = todaysMeals.reduce(
+    (sum, m) => sum + m.items.reduce((s, i) => s + i.fats_g, 0),
+    0
+  );
+
+  const carbsGoal = Math.round(
+    (totalCaloriesToday * CARB_CALORIE_SHARE) / CALORIES_PER_GRAM_CARB
+  );
+  const fatGoal = Math.round(
+    (totalCaloriesToday * FAT_CALORIE_SHARE) / CALORIES_PER_GRAM_FAT
+  );
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
@@ -92,49 +153,18 @@ export default function DashboardScreen() {
           </View>
         </LinearGradient>
 
-        <MealCard title="Breakfast" calories={CALORIES_EATEN} goal={CALORIE_GOAL} />
-
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <View>
-              <Text style={styles.statLabel}>Step to walk</Text>
-              <Text style={styles.statValue}>
-                {STEP_COUNT.toLocaleString()}{" "}
-                <Text style={styles.statUnit}>step</Text>
-              </Text>
-            </View>
-            <View style={[styles.statIcon, styles.statIconLime]}>
-              <Svg viewBox="0 0 24 24" fill="none" width={20} height={20}>
-                <Circle cx="13" cy="4" r="1.8" fill="#be583c" />
-                <Path
-                  d="M11 8l-1 4 2 2v6M13 8l3 3-1 4M9 22l2-4"
-                  stroke="#be583c"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-            </View>
-          </View>
-
-          <View style={styles.statCard}>
-            <View>
-              <Text style={styles.statLabel}>Drink water</Text>
-              <Text style={styles.statValue}>
-                {WATER_GLASSES} <Text style={styles.statUnit}>glass</Text>
-              </Text>
-            </View>
-            <View style={[styles.statIcon, styles.statIconSky]}>
-              <Svg viewBox="0 0 24 24" fill="none" width={20} height={20}>
-                <Path
-                  d="M12 3s6 6.5 6 11a6 6 0 1 1-12 0c0-4.5 6-11 6-11Z"
-                  stroke="#0284c7"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-            </View>
-          </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Todays breakdown</Text>
+          <CaloriesMacrosCard
+            calories={Math.round(totalCaloriesToday)}
+            calorieGoal={DAILY_CALORIE_GOAL}
+            protein={Math.round(totalProteinToday)}
+            proteinGoal={dailyProteinGoal}
+            carbs={Math.round(totalCarbsToday)}
+            carbsGoal={carbsGoal}
+            fats={Math.round(totalFatToday)}
+            fatsGoal={fatGoal}
+          />
         </View>
 
         <View style={styles.section}>
@@ -215,33 +245,6 @@ const styles = StyleSheet.create({
   },
   dayText: { fontSize: 14, fontWeight: "500", color: "#fff" },
   dayTextActive: { fontWeight: "700", color: "#df6847" },
-  statsRow: { flexDirection: "row", gap: 16 },
-  statCard: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  statLabel: { fontSize: 12, color: "#9ca3af" },
-  statValue: { marginTop: 8, fontSize: 18, fontWeight: "700", color: "#111827" },
-  statUnit: { fontSize: 12, fontWeight: "400", color: "#9ca3af" },
-  statIcon: {
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
-  },
-  statIconLime: { backgroundColor: "#fae8e3" },
-  statIconSky: { backgroundColor: "#e0f2fe" },
   section: { gap: 8 },
   sectionLabel: { fontSize: 14, fontWeight: "500", color: "#6b7280" },
 });

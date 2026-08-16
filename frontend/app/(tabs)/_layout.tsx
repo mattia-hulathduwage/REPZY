@@ -18,6 +18,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="nutrition" options={{ title: "Nutrition" }} />
       <Tabs.Screen name="lifestyle" options={{ title: "Lifestyle" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="scan-meal" options={{ title: "Scan", href: null }} />
     </Tabs>
   );
 }
