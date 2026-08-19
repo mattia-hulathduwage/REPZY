@@ -62,6 +62,22 @@ class HeightEntry(Base):
     )
 
 
+class Target(Base):
+    __tablename__ = "targets"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+    calorie_target: Mapped[float | None] = mapped_column(Float, nullable=True)
+    protein_target: Mapped[float | None] = mapped_column(Float, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 class Exercise(Base):
     __tablename__ = "exercises"
 

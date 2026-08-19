@@ -4,7 +4,7 @@ import Svg, { G, Path, Polygon } from "react-native-svg";
 const BMI_MIN = 15;
 const BMI_MAX = 35;
 
-const GAUGE_COLORS = ["#2dd4bf", "#f59e0b", "#8a3324", "#e11d48"];
+const GAUGE_COLORS = ["#eab308", "#22c55e", "#f97316", "#dc2626"];
 
 const CX = 130;
 const CY = 150;
@@ -26,12 +26,14 @@ function segmentPath(pStart: number, pEnd: number) {
   return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 0 1 ${end.x} ${end.y}`;
 }
 
-function getBmiCategory(bmi: number): string {
-  if (bmi < 18.5) return "Underweight";
-  if (bmi < 25) return "Healthy weight";
-  if (bmi < 30) return "Overweight";
-  return "Obese";
+function getBmiCategoryIndex(bmi: number): number {
+  if (bmi < 18.5) return 0;
+  if (bmi < 25) return 1;
+  if (bmi < 30) return 2;
+  return 3;
 }
+
+const CATEGORY_LABELS = ["Underweight", "Healthy weight", "Overweight", "Obese"];
 
 export function BmiCard({
   weightKg,
@@ -42,7 +44,9 @@ export function BmiCard({
 }) {
   const heightM = heightCm / 100;
   const bmi = weightKg > 0 && heightM > 0 ? weightKg / (heightM * heightM) : 0;
-  const category = getBmiCategory(bmi);
+  const categoryIndex = getBmiCategoryIndex(bmi);
+  const category = CATEGORY_LABELS[categoryIndex];
+  const categoryColor = GAUGE_COLORS[categoryIndex];
   const pointerPct = Math.min(
     1,
     Math.max(0, (bmi - BMI_MIN) / (BMI_MAX - BMI_MIN)),
@@ -83,7 +87,9 @@ export function BmiCard({
         </View>
       </View>
 
-      <Text style={styles.category}>{category}</Text>
+      <View style={[styles.categoryPill, { backgroundColor: categoryColor }]}>
+        <Text style={styles.categoryPillText}>{category}</Text>
+      </View>
     </View>
   );
 }
@@ -114,5 +120,11 @@ const styles = StyleSheet.create({
   },
   value: { fontSize: 34, fontWeight: "800", color: "#111827" },
   label: { marginTop: 2, fontSize: 12, fontWeight: "600", color: "#6b7280" },
-  category: { marginTop: 4, fontSize: 13, fontWeight: "600", color: "#6b7280" },
+  categoryPill: {
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  categoryPillText: { fontSize: 13, fontWeight: "600", color: "#ffffff" },
 });

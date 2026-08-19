@@ -1,12 +1,20 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CalorieSummaryCard } from "@/components/calorie-summary-card";
 import { MacrosCard } from "@/components/macros-card";
 import { ProteinChart } from "@/components/protein-chart";
-import { getWeightEntries, listMeals, type Meal } from "@/lib/api";
+import { WeightWheelPicker } from "@/components/weight-wheel-picker";
+import {
+  getTarget,
+  getWeightEntries,
+  listMeals,
+  setCalorieTarget,
+  setProteinTarget,
+  type Meal,
+} from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const DAILY_CALORIE_GOAL = 2000;
@@ -32,6 +40,14 @@ export default function NutritionScreen() {
   const router = useRouter();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [bodyWeight, setBodyWeight] = useState<number | null>(null);
+  const [calorieGoal, setCalorieGoal] = useState(DAILY_CALORIE_GOAL);
+  const [proteinGoalOverride, setProteinGoalOverride] = useState<number | null>(null);
+  const [targetModalVisible, setTargetModalVisible] = useState(false);
+  const [targetMode, setTargetMode] = useState<"calories" | "protein">("calories");
+  const [draftCalorieGoal, setDraftCalorieGoal] = useState(calorieGoal);
+  const [draftProteinGoal, setDraftProteinGoal] = useState(DEFAULT_PROTEIN_GOAL);
+  const [isSavingTarget, setIsSavingTarget] = useState(false);
+  const [targetError, setTargetError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -45,14 +61,50 @@ export default function NutritionScreen() {
           setBodyWeight(entries[entries.length - 1].weight);
         })
         .catch(() => {});
+      getTarget(token)
+        .then((target) => {
+          if (target.calorie_target != null) setCalorieGoal(target.calorie_target);
+          if (target.protein_target != null) setProteinGoalOverride(target.protein_target);
+        })
+        .catch(() => {});
     }, [token])
   );
 
   if (!user) return null;
 
-  const dailyProteinGoal = bodyWeight
+  const dailyProteinGoal = proteinGoalOverride
+    ? proteinGoalOverride
+    : bodyWeight
     ? Math.round(bodyWeight * PROTEIN_PER_KG)
     : DEFAULT_PROTEIN_GOAL;
+
+  function openTargetModal() {
+    setDraftCalorieGoal(calorieGoal);
+    setDraftProteinGoal(dailyProteinGoal);
+    setTargetMode("calories");
+    setTargetError(null);
+    setTargetModalVisible(true);
+  }
+
+  async function saveTarget() {
+    if (!token) return;
+    setTargetError(null);
+    setIsSavingTarget(true);
+    try {
+      if (targetMode === "calories") {
+        await setCalorieTarget(token, draftCalorieGoal);
+        setCalorieGoal(draftCalorieGoal);
+      } else {
+        await setProteinTarget(token, draftProteinGoal);
+        setProteinGoalOverride(draftProteinGoal);
+      }
+      setTargetModalVisible(false);
+    } catch (err) {
+      setTargetError(err instanceof Error ? err.message : "Failed to save target");
+    } finally {
+      setIsSavingTarget(false);
+    }
+  }
 
   const todaysMeals = meals.filter((m) => isToday(m.logged_at));
   const totalCaloriesToday = todaysMeals.reduce(
@@ -99,7 +151,7 @@ export default function NutritionScreen() {
             </LinearGradient>
           </Pressable>
 
-          <Pressable style={styles.actionColumn} onPress={() => {}}>
+          <Pressable style={styles.actionColumn} onPress={openTargetModal}>
             <LinearGradient
               colors={["#2563EB", "#06B6D4"]}
               start={{ x: 0, y: 0 }}
@@ -113,7 +165,7 @@ export default function NutritionScreen() {
 
         <CalorieSummaryCard
           calories={Math.round(totalCaloriesToday)}
-          goal={DAILY_CALORIE_GOAL}
+          goal={calorieGoal}
         />
 
         <MacrosCard
@@ -128,6 +180,90 @@ export default function NutritionScreen() {
         <ProteinChart title="Protein intake" />
       </View>
       </ScrollView>
+
+      <Modal
+        visible={targetModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setTargetModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {targetMode === "calories" ? "Set calorie target" : "Set protein target"}
+            </Text>
+
+            <View style={styles.modeSwitch}>
+              <Pressable
+                style={[styles.modeSwitchOption, targetMode === "calories" && styles.modeSwitchOptionActive]}
+                onPress={() => setTargetMode("calories")}
+              >
+                <Text
+                  style={[
+                    styles.modeSwitchText,
+                    targetMode === "calories" && styles.modeSwitchTextActive,
+                  ]}
+                >
+                  Calories
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modeSwitchOption, targetMode === "protein" && styles.modeSwitchOptionActive]}
+                onPress={() => setTargetMode("protein")}
+              >
+                <Text
+                  style={[
+                    styles.modeSwitchText,
+                    targetMode === "protein" && styles.modeSwitchTextActive,
+                  ]}
+                >
+                  Protein
+                </Text>
+              </Pressable>
+            </View>
+
+            {targetMode === "calories" ? (
+              <WeightWheelPicker
+                value={draftCalorieGoal}
+                onChange={setDraftCalorieGoal}
+                min={500}
+                max={5000}
+                step={10}
+                decimals={0}
+                unit="g"
+              />
+            ) : (
+              <WeightWheelPicker
+                value={draftProteinGoal}
+                onChange={setDraftProteinGoal}
+                min={20}
+                max={300}
+                step={1}
+                decimals={0}
+                unit="g"
+              />
+            )}
+
+            {targetError && <Text style={styles.modalError}>{targetError}</Text>}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.modalCancelButton}
+                onPress={() => setTargetModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalSaveButton, isSavingTarget && styles.modalSaveButtonDisabled]}
+                onPress={saveTarget}
+                disabled={isSavingTarget}
+              >
+                <Text style={styles.modalSaveText}>{isSavingTarget ? "Saving..." : "Save"}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -178,4 +314,65 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   setTargetCardText: { fontSize: 16, fontWeight: "600", color: "#ffffff", textAlign: "center" },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: 24,
+    backgroundColor: "#fff",
+    padding: 24,
+    gap: 16,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  modeSwitch: {
+    flexDirection: "row",
+    backgroundColor: "#e9e9e9",
+    borderRadius: 999,
+    padding: 4,
+    gap: 4,
+  },
+  modeSwitchOption: {
+    flex: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  modeSwitchOptionActive: {
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  modeSwitchText: { fontSize: 13, fontWeight: "600", color: "#6b7280" },
+  modeSwitchTextActive: { color: "#111827" },
+  modalError: { fontSize: 13, color: "#ef4444" },
+  modalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    borderRadius: 999,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#e9e9e9",
+  },
+  modalCancelText: { fontSize: 14, fontWeight: "600", color: "#374151" },
+  modalSaveButton: {
+    flex: 1,
+    borderRadius: 999,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#111827",
+  },
+  modalSaveButtonDisabled: { opacity: 0.6 },
+  modalSaveText: { fontSize: 14, fontWeight: "600", color: "#fff" },
 });

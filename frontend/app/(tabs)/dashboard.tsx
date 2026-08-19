@@ -8,7 +8,7 @@ import Svg, { Path } from "react-native-svg";
 import { CaloriesMacrosCard } from "@/components/calories-macros-card";
 import { ProteinChart } from "@/components/protein-chart";
 import { WeightChart } from "@/components/weight-chart";
-import { getWeightEntries, listMeals, type Meal } from "@/lib/api";
+import { getTarget, getWeightEntries, listMeals, type Meal } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const DAILY_CALORIE_GOAL = 2000;
@@ -41,6 +41,8 @@ export default function DashboardScreen() {
   const [selectedDate] = useState(() => new Date());
   const [meals, setMeals] = useState<Meal[]>([]);
   const [bodyWeight, setBodyWeight] = useState<number | null>(null);
+  const [calorieGoal, setCalorieGoal] = useState(DAILY_CALORIE_GOAL);
+  const [proteinGoalOverride, setProteinGoalOverride] = useState<number | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,6 +56,12 @@ export default function DashboardScreen() {
           setBodyWeight(entries[entries.length - 1].weight);
         })
         .catch(() => {});
+      getTarget(token)
+        .then((target) => {
+          if (target.calorie_target != null) setCalorieGoal(target.calorie_target);
+          if (target.protein_target != null) setProteinGoalOverride(target.protein_target);
+        })
+        .catch(() => {});
     }, [token])
   );
 
@@ -62,7 +70,9 @@ export default function DashboardScreen() {
   const weekStart = startOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const dailyProteinGoal = bodyWeight
+  const dailyProteinGoal = proteinGoalOverride
+    ? proteinGoalOverride
+    : bodyWeight
     ? Math.round(bodyWeight * PROTEIN_PER_KG)
     : DEFAULT_PROTEIN_GOAL;
 
@@ -155,7 +165,7 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <CaloriesMacrosCard
             calories={Math.round(totalCaloriesToday)}
-            calorieGoal={DAILY_CALORIE_GOAL}
+            calorieGoal={calorieGoal}
             protein={Math.round(totalProteinToday)}
             proteinGoal={dailyProteinGoal}
             carbs={Math.round(totalCarbsToday)}

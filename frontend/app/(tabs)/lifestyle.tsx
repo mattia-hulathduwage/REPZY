@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, ClipPath, Defs, G, Line, Path } from "react-native-svg";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   createHeightEntry,
   createWeightEntry,
@@ -238,31 +239,25 @@ export default function LifestyleScreen() {
           <BmiCard weightKg={currentWeight} heightCm={heightCm} />
 
           <View style={styles.actionRow}>
-            <Pressable style={styles.actionButton}>
-              <Text style={styles.actionText}>Water tracker</Text>
-              <View style={[styles.actionIcon, styles.actionIconSky]}>
-                <Svg viewBox="0 0 24 24" fill="none" width={16} height={16}>
-                  <Path
-                    d="M12 5v14M5 12h14"
-                    stroke="#0284c7"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </Svg>
-              </View>
+            <Pressable style={styles.actionButtonWrap}>
+              <LinearGradient
+                colors={["#0369a1", "#38bdf8"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionTextOnGradient}>Water tracker</Text>
+              </LinearGradient>
             </Pressable>
-            <Pressable style={styles.actionButton} onPress={openWeightModal}>
-              <Text style={styles.actionText}>Body stats</Text>
-              <View style={[styles.actionIcon, styles.actionIconLime]}>
-                <Svg viewBox="0 0 24 24" fill="none" width={16} height={16}>
-                  <Path
-                    d="M12 5v14M5 12h14"
-                    stroke="#65a30d"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </Svg>
-              </View>
+            <Pressable style={styles.actionButtonWrap} onPress={openWeightModal}>
+              <LinearGradient
+                colors={["#15803d", "#4ade80"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionTextOnGradient}>Body stats</Text>
+              </LinearGradient>
             </Pressable>
           </View>
 
@@ -434,30 +429,27 @@ const styles = StyleSheet.create({
   gaugeValue: { fontSize: 24, fontWeight: "800", color: "#111827", marginTop: 4 },
   gaugeGoal: { fontSize: 13, color: "#9ca3af", fontWeight: "500" },
   actionRow: { flexDirection: "row", gap: 16 },
+  actionButtonWrap: {
+    flexBasis: 0,
+    flexGrow: 1,
+    minWidth: 0,
+    borderRadius: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
   actionButton: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  actionText: { flex: 1, fontSize: 13, fontWeight: "600", color: "#111827" },
-  actionIcon: {
-    height: 36,
-    width: 36,
+    minHeight: 76,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 999,
+    borderRadius: 24,
+    padding: 16,
   },
-  actionIconSky: { backgroundColor: "#e0f2fe" },
-  actionIconLime: { backgroundColor: "#ecfccb" },
+  actionText: { fontSize: 13, fontWeight: "600", color: "#111827", textAlign: "center" },
+  actionTextOnGradient: { fontSize: 16, fontWeight: "600", color: "#fff", textAlign: "center" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

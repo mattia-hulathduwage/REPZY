@@ -138,6 +138,45 @@ export async function getHeightEntries(token: string): Promise<HeightEntry[]> {
   return res.json();
 }
 
+export type Target = {
+  calorie_target: number | null;
+  protein_target: number | null;
+};
+
+export async function getTarget(token: string): Promise<Target> {
+  const res = await fetch(`${API_URL}/targets`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function setCalorieTarget(token: string, calorieTarget: number): Promise<Target> {
+  const res = await fetch(`${API_URL}/targets/calories`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ calorie_target: calorieTarget }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function setProteinTarget(token: string, proteinTarget: number): Promise<Target> {
+  const res = await fetch(`${API_URL}/targets/protein`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ protein_target: proteinTarget }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
 export type Exercise = {
   id: string;
   name: string;

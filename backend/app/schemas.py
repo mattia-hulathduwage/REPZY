@@ -60,6 +60,21 @@ class HeightEntryOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class CalorieTargetUpdate(BaseModel):
+    calorie_target: float = Field(gt=0, le=20000)
+
+
+class ProteinTargetUpdate(BaseModel):
+    protein_target: float = Field(gt=0, le=2000)
+
+
+class TargetOut(BaseModel):
+    calorie_target: float | None
+    protein_target: float | None
+
+    model_config = {"from_attributes": True}
+
+
 class ExerciseCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     category: str | None = Field(default=None, max_length=50)
