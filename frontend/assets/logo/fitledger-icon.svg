@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="FitLedger">
+  <defs>
+    <linearGradient id="fl-grad" x1="0.1464" y1="0.1464" x2="0.8536" y2="0.8536">
+      <stop offset="0" stop-color="#DF6847"/>
+      <stop offset="1" stop-color="#F4A261"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="200" ry="200" fill="url(#fl-grad)"/>
+  <g transform="translate(301.6 270.5) scale(3.4500)">
+    <path d="M44 0 L120 0 L120 38 L44 38 L44 52 L112 52 L112 90 L44 90 L44 102 L2 140 L2 38 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

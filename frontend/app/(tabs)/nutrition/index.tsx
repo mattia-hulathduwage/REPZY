@@ -1,8 +1,8 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
 import { CalorieSummaryCard } from "@/components/calorie-summary-card";
 import { MacrosCard } from "@/components/macros-card";
 import { ProteinChart } from "@/components/protein-chart";
@@ -87,20 +87,29 @@ export default function NutritionScreen() {
           <Text style={styles.title}>Nutrition</Text>
         </View>
 
-        <Pressable style={styles.addMealCard} onPress={() => router.push("/nutrition/add-meal")}>
-          <Text style={styles.addMealCardText}>Add meal</Text>
+        <View style={styles.actionRow}>
+          <Pressable style={styles.actionColumn} onPress={() => router.push("/nutrition/add-meal")}>
+            <LinearGradient
+              colors={["#DF6847", "#F4A261"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.addMealCard}
+            >
+              <Text style={styles.addMealCardText}>Log a meal</Text>
+            </LinearGradient>
+          </Pressable>
 
-          <View style={styles.addMealIconWrap}>
-            <Svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
-              <Path
-                d="M12 5v14M5 12h14"
-                stroke="#ea580c"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </Svg>
-          </View>
-        </Pressable>
+          <Pressable style={styles.actionColumn} onPress={() => {}}>
+            <LinearGradient
+              colors={["#2563EB", "#06B6D4"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.setTargetCard}
+            >
+              <Text style={styles.setTargetCardText}>Set target</Text>
+            </LinearGradient>
+          </Pressable>
+        </View>
 
         <CalorieSummaryCard
           calories={Math.round(totalCaloriesToday)}
@@ -133,26 +142,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  addMealCard: {
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    padding: 16,
+  actionRow: {
     flexDirection: "row",
+    gap: 12,
+  },
+  actionColumn: {
+    flex: 1,
+    flexBasis: 0,
+  },
+  addMealCard: {
+    width: "100%",
+    minHeight: 76,
+    borderRadius: 24,
+    padding: 16,
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
-  addMealIconWrap: {
-    height: 44,
-    width: 44,
+  addMealCardText: { fontSize: 16, fontWeight: "600", color: "#ffffff", textAlign: "center" },
+  setTargetCard: {
+    width: "100%",
+    minHeight: 76,
+    borderRadius: 24,
+    padding: 16,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 999,
-    backgroundColor: "#ffedd5",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  addMealCardText: { fontSize: 16, fontWeight: "600", color: "#111827" },
+  setTargetCardText: { fontSize: 16, fontWeight: "600", color: "#ffffff", textAlign: "center" },
 });

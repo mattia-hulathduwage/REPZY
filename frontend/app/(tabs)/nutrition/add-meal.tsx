@@ -53,7 +53,7 @@ export default function AddMealScreen() {
                 />
               </Svg>
             </Pressable>
-            <Text style={styles.title}>Add meal</Text>
+            <Text style={styles.title}>Log a meal</Text>
           </View>
 
           <Text style={styles.subtitle}>What meal are you logging?</Text>

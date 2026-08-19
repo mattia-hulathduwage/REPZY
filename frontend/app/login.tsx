@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LogoMark } from "@/components/logo-mark";
 import { login } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -39,15 +40,10 @@ export default function LoginScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <LinearGradient
-            colors={["#df6847", "#f4a261"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.logo}
-          >
-            <Text style={styles.logoText}>F</Text>
-          </LinearGradient>
-          <Text style={styles.brand}>FitApp</Text>
+          <View style={styles.logo}>
+            <LogoMark size={44} />
+          </View>
+          <Text style={styles.brand}>FitLedger</Text>
           <Text style={styles.title}>Hi There!</Text>
           <Text style={styles.subtitle}>Please enter required details.</Text>
         </View>
@@ -138,16 +134,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     height: 44,
     width: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 14,
     shadowColor: "#df6847",
     shadowOpacity: 0.3,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
-  logoText: { fontSize: 18, fontWeight: "700", color: "#fff" },
   brand: {
     marginBottom: 32,
     fontSize: 18,
