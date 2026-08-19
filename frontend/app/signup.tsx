@@ -30,17 +30,18 @@ export default function SignupScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={["#4a9fe8", "#1a4f9c", "#0a1f4a", "#050b1e", "#000000"]}
-      locations={[0, 0.22, 0.45, 0.7, 1]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <View style={styles.logo}>
+          <LinearGradient
+            colors={["#df6847", "#f4a261"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.logo}
+          >
             <Text style={styles.logoText}>F</Text>
-          </View>
+          </LinearGradient>
           <Text style={styles.brand}>FitApp</Text>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Please enter your details.</Text>
@@ -51,7 +52,7 @@ export default function SignupScreen() {
 
           <TextInput
             placeholder="Full name"
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor="#9ca3af"
             value={name}
             onChangeText={setName}
             style={[styles.input, styles.inputSpacing]}
@@ -61,7 +62,7 @@ export default function SignupScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="Email address"
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor="#9ca3af"
             value={email}
             onChangeText={setEmail}
             style={[styles.input, styles.inputSpacing]}
@@ -70,7 +71,7 @@ export default function SignupScreen() {
           <TextInput
             secureTextEntry
             placeholder="Password"
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
             style={[styles.input, styles.inputSpacingLarge]}
@@ -79,11 +80,18 @@ export default function SignupScreen() {
           <Pressable
             onPress={handleSubmit}
             disabled={isSubmitting}
-            style={[styles.button, isSubmitting && styles.buttonDisabled]}
+            style={({ pressed }) => [pressed && styles.buttonPressed]}
           >
-            <Text style={styles.buttonText}>
-              {isSubmitting ? "Creating account…" : "Sign Up"}
-            </Text>
+            <LinearGradient
+              colors={["#df6847", "#f4a261"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.button, isSubmitting && styles.buttonDisabled]}
+            >
+              <Text style={styles.buttonText}>
+                {isSubmitting ? "Creating account…" : "Sign Up"}
+              </Text>
+            </LinearGradient>
           </Pressable>
 
           <Text style={styles.switchText}>
@@ -97,7 +105,7 @@ export default function SignupScreen() {
         <Text style={styles.footer}>Terms of Service | Privacy Policy</Text>
       </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -107,6 +115,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 40,
+    backgroundColor: "#e9e9e9",
   },
   safeArea: {
     flex: 1,
@@ -126,14 +135,16 @@ const styles = StyleSheet.create({
   },
   logo: {
     marginBottom: 16,
-    height: 40,
-    width: 40,
+    height: 44,
+    width: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderRadius: 14,
+    shadowColor: "#df6847",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   logoText: { fontSize: 18, fontWeight: "700", color: "#fff" },
   brand: {
@@ -141,10 +152,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
     letterSpacing: 0.5,
-    color: "#fff",
+    color: "#111827",
   },
-  title: { fontSize: 30, fontWeight: "600", color: "#fff" },
-  subtitle: { marginTop: 8, fontSize: 14, color: "rgba(255,255,255,0.5)" },
+  title: { fontSize: 30, fontWeight: "700", color: "#111827" },
+  subtitle: { marginTop: 8, fontSize: 14, color: "#6b7280" },
   form: { flex: 1 },
   error: {
     marginBottom: 16,
@@ -152,10 +163,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
-    color: "#fca5a5",
-    backgroundColor: "rgba(239,68,68,0.1)",
+    color: "#dc2626",
+    backgroundColor: "rgba(220,38,38,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(239,68,68,0.2)",
+    borderColor: "rgba(220,38,38,0.15)",
   },
   input: {
     width: "100%",
@@ -163,10 +174,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     fontSize: 14,
-    color: "#fff",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    color: "#111827",
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   inputSpacing: { marginBottom: 16 },
   inputSpacingLarge: { marginBottom: 32 },
@@ -175,27 +189,32 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: "#38bdf8",
+    shadowColor: "#df6847",
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
+  buttonPressed: { opacity: 0.9 },
   buttonDisabled: { opacity: 0.5 },
   buttonText: {
     textAlign: "center",
     fontSize: 14,
     fontWeight: "600",
-    color: "#04122e",
+    color: "#fff",
   },
   switchText: {
     marginTop: 20,
     textAlign: "center",
     fontSize: 14,
-    color: "rgba(255,255,255,0.5)",
+    color: "#6b7280",
   },
-  switchLink: { fontWeight: "600", color: "#fff" },
+  switchLink: { fontWeight: "600", color: "#df6847" },
   footer: {
     marginTop: "auto",
     paddingTop: 40,
     textAlign: "center",
     fontSize: 12,
-    color: "rgba(255,255,255,0.3)",
+    color: "#9ca3af",
   },
 });

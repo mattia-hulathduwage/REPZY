@@ -38,7 +38,7 @@ function isToday(isoDate: string) {
 
 export default function DashboardScreen() {
   const { user, token } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [selectedDate] = useState(() => new Date());
   const [meals, setMeals] = useState<Meal[]>([]);
   const [bodyWeight, setBodyWeight] = useState<number | null>(null);
 
@@ -137,9 +137,8 @@ export default function DashboardScreen() {
             {weekDays.map((d) => {
               const active = isSameDay(d, selectedDate);
               return (
-                <Pressable
+                <View
                   key={d.toISOString()}
-                  onPress={() => setSelectedDate(d)}
                   style={[styles.dayButton, active && styles.dayButtonActive]}
                 >
                   <Text
@@ -147,14 +146,13 @@ export default function DashboardScreen() {
                   >
                     {format(d, "d")}
                   </Text>
-                </Pressable>
+                </View>
               );
             })}
           </View>
         </LinearGradient>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Todays breakdown</Text>
           <CaloriesMacrosCard
             calories={Math.round(totalCaloriesToday)}
             calorieGoal={DAILY_CALORIE_GOAL}
@@ -168,13 +166,11 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Weight this year</Text>
-          <WeightChart />
+          <WeightChart title="Weight this year" />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Protein intakes this week</Text>
-          <ProteinChart />
+          <ProteinChart title="Protein intakes this week" />
         </View>
       </View>
       </ScrollView>
@@ -246,5 +242,4 @@ const styles = StyleSheet.create({
   dayText: { fontSize: 14, fontWeight: "500", color: "#fff" },
   dayTextActive: { fontWeight: "700", color: "#df6847" },
   section: { gap: 8 },
-  sectionLabel: { fontSize: 14, fontWeight: "500", color: "#6b7280" },
 });

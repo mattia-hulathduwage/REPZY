@@ -85,17 +85,22 @@ export default function NutritionScreen() {
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Nutrition</Text>
-          <Pressable style={styles.addButton} onPress={() => router.push("/nutrition/add-meal")}>
+        </View>
+
+        <Pressable style={styles.addMealCard} onPress={() => router.push("/nutrition/add-meal")}>
+          <Text style={styles.addMealCardText}>Add meal</Text>
+
+          <View style={styles.addMealIconWrap}>
             <Svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
               <Path
                 d="M12 5v14M5 12h14"
-                stroke="#1f2937"
+                stroke="#ea580c"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
             </Svg>
-          </Pressable>
-        </View>
+          </View>
+        </Pressable>
 
         <CalorieSummaryCard
           calories={Math.round(totalCaloriesToday)}
@@ -111,10 +116,7 @@ export default function NutritionScreen() {
           fatGoal={fatGoal}
         />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Protein intake</Text>
-          <ProteinChart />
-        </View>
+        <ProteinChart title="Protein intake" />
       </View>
       </ScrollView>
     </SafeAreaView>
@@ -131,19 +133,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  addButton: {
-    height: 40,
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 999,
+  addMealCard: {
+    borderRadius: 24,
     backgroundColor: "#fff",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
-  section: { gap: 8 },
-  sectionLabel: { fontSize: 14, fontWeight: "500", color: "#6b7280" },
+  addMealIconWrap: {
+    height: 44,
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 999,
+    backgroundColor: "#ffedd5",
+  },
+  addMealCardText: { fontSize: 16, fontWeight: "600", color: "#111827" },
 });

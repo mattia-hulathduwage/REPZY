@@ -9,7 +9,8 @@ import { useAuth } from "@/lib/auth-context";
 export default function ScheduleViewScreen() {
   const router = useRouter();
   const { token } = useAuth();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, readOnly } = useLocalSearchParams<{ id?: string; readOnly?: string }>();
+  const isReadOnly = readOnly === "1";
 
   const [schedule, setSchedule] = useState<WorkoutSchedule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +60,10 @@ export default function ScheduleViewScreen() {
               </Text>
 
               {schedule.days.map((day) => (
-                <View key={day.id} style={styles.dayCard}>
+                <View
+                  key={day.id}
+                  style={[styles.dayCard, day.is_rest && styles.dayCardRest]}
+                >
                   <Text style={styles.dayLabel}>{day.day_label ?? `Day ${day.day_number}`}</Text>
 
                   {day.is_rest ? (
@@ -86,12 +90,14 @@ export default function ScheduleViewScreen() {
                 </View>
               ))}
 
-              <Pressable
-                style={styles.editButton}
-                onPress={() => router.push(`/workout/create-schedule?id=${schedule.id}`)}
-              >
-                <Text style={styles.editButtonText}>Edit schedule</Text>
-              </Pressable>
+              {!isReadOnly && (
+                <Pressable
+                  style={styles.editButton}
+                  onPress={() => router.push(`/workout/create-schedule?id=${schedule.id}`)}
+                >
+                  <Text style={styles.editButtonText}>Edit schedule</Text>
+                </Pressable>
+              )}
             </>
           )}
         </View>
@@ -137,6 +143,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+  dayCardRest: { backgroundColor: "#eafbf0" },
   dayLabel: { fontSize: 15, fontWeight: "600", color: "#111827" },
   restText: { fontSize: 13, color: "#9ca3af" },
   exerciseRow: {

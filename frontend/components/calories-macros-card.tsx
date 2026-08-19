@@ -119,7 +119,7 @@ export function CaloriesMacrosCard({
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.goalLabel}>Today's Goal</Text>
+          <Text style={styles.goalLabel}>Today's Breakdown</Text>
           <View style={styles.calorieRow}>
             <Text style={styles.calorieValue}>{calories}</Text>
             <Text style={styles.calorieGoal}>/{calorieGoal}</Text>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  goalLabel: { fontSize: 13, color: "#9ca3af", fontWeight: "500" },
+  goalLabel: { fontSize: 16, fontWeight: "600", color: "#111827" },
   calorieRow: {
     marginTop: 4,
     flexDirection: "row",

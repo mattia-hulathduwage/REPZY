@@ -26,7 +26,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-export function ProteinChart() {
+export function ProteinChart({ title }: { title?: string }) {
   const { token } = useAuth();
   const [values, setValues] = useState<number[]>(new Array(7).fill(0));
 
@@ -107,6 +107,8 @@ export function ProteinChart() {
 
   return (
     <View style={styles.card}>
+      {title && <Text style={styles.title}>{title}</Text>}
+
       <View style={styles.statsRow}>
         <View>
           <Text style={styles.statLabel}>Average</Text>
@@ -207,6 +209,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+  title: { fontSize: 16, fontWeight: "600", color: "#111827", marginBottom: 16 },
   statsRow: { flexDirection: "row", gap: 32 },
   statLabel: { fontSize: 12, color: "#9ca3af" },
   average: { marginTop: 4, fontSize: 18, fontWeight: "700", color: "#1d4ed8" },

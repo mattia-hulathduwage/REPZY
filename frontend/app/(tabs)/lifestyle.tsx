@@ -266,10 +266,7 @@ export default function LifestyleScreen() {
             </Pressable>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Weight this year</Text>
-            <WeightChart key={chartRefreshKey} />
-          </View>
+          <WeightChart key={chartRefreshKey} title="Weight this year" />
         </View>
       </ScrollView>
 
@@ -461,8 +458,6 @@ const styles = StyleSheet.create({
   },
   actionIconSky: { backgroundColor: "#e0f2fe" },
   actionIconLime: { backgroundColor: "#ecfccb" },
-  section: { gap: 8 },
-  sectionLabel: { fontSize: 14, fontWeight: "500", color: "#6b7280" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

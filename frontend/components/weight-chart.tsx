@@ -31,7 +31,7 @@ function latestPerMonth(
   return Array.from(byMonth.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function WeightChart() {
+export function WeightChart({ title }: { title?: string }) {
   const { token } = useAuth();
   const [entries, setEntries] = useState<{ date: string; weight: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,8 +92,11 @@ export function WeightChart() {
 
   if (isLoading) {
     return (
-      <View style={[styles.card, styles.centerContent]}>
-        <ActivityIndicator color="#df6847" />
+      <View style={styles.card}>
+        {title && <Text style={styles.title}>{title}</Text>}
+        <View style={styles.centerContent}>
+          <ActivityIndicator color="#df6847" />
+        </View>
       </View>
     );
   }
@@ -122,6 +125,8 @@ export function WeightChart() {
 
   return (
     <View style={styles.card}>
+      {title && <Text style={styles.title}>{title}</Text>}
+
       <View style={styles.statsRow}>
         <View>
           <Text style={styles.statLabel}>Average</Text>
@@ -232,6 +237,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   centerContent: { minHeight: 120, alignItems: "center", justifyContent: "center" },
+  title: { fontSize: 16, fontWeight: "600", color: "#111827", marginBottom: 16 },
   statsRow: { flexDirection: "row", gap: 32 },
   statLabel: { fontSize: 12, color: "#9ca3af" },
   average: { marginTop: 4, fontSize: 18, fontWeight: "700", color: "#1d4ed8" },
